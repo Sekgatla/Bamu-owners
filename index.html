@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bamu Owners — Fleet Dashboard</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./src/css/bamu-owners.css">
+</head>
+<body>
+  <div class="app-shell">
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <div class="brand-name">Bamu</div>
+        <div class="brand-tagline">Owners Dashboard</div>
+      </div>
+      <nav class="sidebar-nav">
+        <a href="./index.html" class="active">
+          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          Fleet Dashboard
+        </a>
+        <a href="./customers.html">
+          <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          Customers
+        </a>
+        <a href="./vehicles.html">
+          <svg viewBox="0 0 24 24"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+          Vehicles
+        </a>
+        <a href="./trackers.html">
+          <svg viewBox="0 0 24 24"><path d="M12 2L3 7v5c0 5.25 3.75 10.15 9 11.25C17.25 22.15 21 17.25 21 12V7L12 2z"/><circle cx="12" cy="12" r="3"/></svg>
+          Trackers
+        </a>
+        <a href="./map.html">
+          <svg viewBox="0 0 24 24"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
+          Fleet Map
+        </a>
+        <a href="./alerts.html">
+          <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          Alerts
+          <span id="alerts-nav-badge" class="nav-badge" style="display:none">0</span>
+        </a>
+      </nav>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+      <div class="page-header">
+        <div class="page-header-left">
+          <h1>Fleet Dashboard</h1>
+          <p>Overview of your entire fleet</p>
+        </div>
+        <div style="font-size:13px;color:var(--text-muted);" id="last-updated"></div>
+      </div>
+
+      <!-- Stats Grid -->
+      <div class="stats-grid" id="stats-grid">
+        <!-- Populated by JS -->
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="quick-actions">
+        <a href="./customers.html" class="btn btn-primary">
+          <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Add Customer
+        </a>
+        <a href="./map.html" class="btn btn-accent">
+          <svg viewBox="0 0 24 24"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
+          View Fleet Map
+        </a>
+        <a href="./alerts.html" class="btn btn-secondary">
+          <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          View All Alerts
+        </a>
+      </div>
+
+      <!-- 2-col layout: recent alerts + fleet table -->
+      <div class="dash-grid-2">
+        <!-- Recent Alerts -->
+        <div class="card">
+          <div class="card-header">
+            <h2>Recent Alerts</h2>
+            <a href="./alerts.html" class="btn btn-ghost btn-sm">View all</a>
+          </div>
+          <div id="recent-alerts">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+
+        <!-- Vehicle Status Breakdown -->
+        <div class="card">
+          <div class="card-header">
+            <h2>Fleet Status</h2>
+          </div>
+          <div id="fleet-status">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Fleet Overview Table -->
+      <div class="fleet-overview">
+        <h2>All Vehicles</h2>
+        <div class="table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Vehicle</th>
+                <th>Plate</th>
+                <th>Status</th>
+                <th>Customer</th>
+                <th>Tracker</th>
+                <th>Speed</th>
+                <th>Battery</th>
+              </tr>
+            </thead>
+            <tbody id="fleet-table-body">
+              <!-- Populated by JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script type="module">
+    import { getCustomers, getVehicles, getTrackers, getAlerts, findCustomerById, getTrackerById } from './src/js/storage.js';
+
+    function formatRelativeTime(iso) {
+      if (!iso) return 'Never';
+      const diff = Date.now() - new Date(iso).getTime();
+      const mins = Math.floor(diff / 60000);
+      if (mins < 1) return 'Just now';
+      if (mins < 60) return `${mins}m ago`;
+      const hrs = Math.floor(mins / 60);
+      if (hrs < 24) return `${hrs}h ago`;
+      return `${Math.floor(hrs / 24)}d ago`;
+    }
+
+    function getBatteryBarHtml(pct) {
+      const cls = pct >= 50 ? 'high' : pct >= 20 ? 'mid' : 'low';
+      return `<div class="battery-bar-track"><div class="battery-bar-fill ${cls}" style="width:${pct}%"></div></div> ${pct}%`;
+    }
+
+    const TYPE_ICONS = {
+      'hijack-zone': '🚨',
+      'speeding': '⚡',
+      'stolen-zone': '🔶',
+      'geofence': '📍',
+      'offline': '📡',
+    };
+
+    const TYPE_BADGE = {
+      'hijack-zone': 'badge-danger',
+      'speeding': 'badge-warning',
+      'stolen-zone': 'badge-orange',
+      'geofence': 'badge-info',
+      'offline': 'badge-muted',
+    };
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const customers = getCustomers();
+      const vehicles = getVehicles();
+      const trackers = getTrackers();
+      const alerts = getAlerts();
+
+      const activeTrackers = trackers.filter(t => t.status === 'active').length;
+      const unreadAlerts = alerts.filter(a => !a.read).length;
+      const parked = vehicles.filter(v => v.status === 'parked').length;
+      const moving = vehicles.filter(v => v.status === 'moving').length;
+      const offline = vehicles.filter(v => v.status === 'offline').length;
+      const alertVehicles = vehicles.filter(v => v.status === 'alert').length;
+
+      // Update nav badge
+      const navBadge = document.getElementById('alerts-nav-badge');
+      if (navBadge && unreadAlerts > 0) {
+        navBadge.textContent = unreadAlerts;
+        navBadge.style.display = 'inline-flex';
+      }
+
+      document.getElementById('last-updated').textContent = 'Last updated: ' + new Date().toLocaleTimeString('en-ZA');
+
+      // Stats Grid
+      document.getElementById('stats-grid').innerHTML = `
+        <div class="stat-card">
+          <div class="stat-card-top">
+            <span class="stat-card-label">Customers</span>
+            <div class="stat-card-icon green">
+              <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            </div>
+          </div>
+          <div class="stat-card-value">${customers.length}</div>
+          <div class="stat-card-sub">Registered accounts</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-top">
+            <span class="stat-card-label">Vehicles</span>
+            <div class="stat-card-icon teal">
+              <svg viewBox="0 0 24 24"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+            </div>
+          </div>
+          <div class="stat-card-value">${vehicles.length}</div>
+          <div class="stat-card-sub">${parked} parked · ${moving} moving · ${offline} offline</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-top">
+            <span class="stat-card-label">Active Trackers</span>
+            <div class="stat-card-icon blue">
+              <svg viewBox="0 0 24 24"><path d="M12 2L3 7v5c0 5.25 3.75 10.15 9 11.25C17.25 22.15 21 17.25 21 12V7L12 2z"/><circle cx="12" cy="12" r="3"/></svg>
+            </div>
+          </div>
+          <div class="stat-card-value">${activeTrackers}</div>
+          <div class="stat-card-sub">${trackers.length} total trackers</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-top">
+            <span class="stat-card-label">Unread Alerts</span>
+            <div class="stat-card-icon ${unreadAlerts > 0 ? 'red' : 'green'}">
+              <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            </div>
+          </div>
+          <div class="stat-card-value">${unreadAlerts}</div>
+          <div class="stat-card-sub">${alerts.length} total alerts</div>
+        </div>
+      `;
+
+      // Recent Alerts
+      const recentAlerts = [...alerts].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)).slice(0, 5);
+      const recentAlertsEl = document.getElementById('recent-alerts');
+      if (recentAlerts.length === 0) {
+        recentAlertsEl.innerHTML = `<p style="color:var(--text-muted);font-size:14px;padding:8px 0;">No alerts yet.</p>`;
+      } else {
+        recentAlertsEl.innerHTML = `<div class="activity-feed">` + recentAlerts.map(a => {
+          const vehicle = vehicles.find(v => v.id === a.vehicleId);
+          return `
+            <div class="activity-item">
+              <div class="activity-dot" style="background:${a.type === 'hijack-zone' ? '#DC2626' : a.type === 'speeding' ? '#D97706' : a.type === 'stolen-zone' ? '#F97316' : '#0284C7'}"></div>
+              <div>
+                <div class="activity-text">
+                  ${TYPE_ICONS[a.type] || '🔔'} ${a.message}
+                </div>
+                <div class="activity-time">${vehicle ? vehicle.plate : 'Unknown'} · ${formatRelativeTime(a.timestamp)} · ${a.read ? '<span style="color:#6B7280">Read</span>' : '<span style="color:#DC2626;font-weight:600">Unread</span>'}</div>
+              </div>
+            </div>
+          `;
+        }).join('') + `</div>`;
+      }
+
+      // Fleet Status Breakdown
+      const statusItems = [
+        { label: 'Parked', count: parked, badge: 'badge-parked', icon: '🟢' },
+        { label: 'Moving', count: moving, badge: 'badge-moving', icon: '🔵' },
+        { label: 'Offline', count: offline, badge: 'badge-offline', icon: '⚫' },
+        { label: 'Alert', count: alertVehicles, badge: 'badge-alert', icon: '🔴' },
+      ];
+      document.getElementById('fleet-status').innerHTML = statusItems.map(s => `
+        <div class="info-row">
+          <span class="label">${s.icon} ${s.label}</span>
+          <span class="value">
+            <span class="badge ${s.badge}">${s.count} vehicle${s.count !== 1 ? 's' : ''}</span>
+          </span>
+        </div>
+      `).join('') + `
+        <div class="info-row">
+          <span class="label">Total Fleet</span>
+          <span class="value" style="font-size:18px;">${vehicles.length}</span>
+        </div>
+      `;
+
+      // Fleet Table
+      const tbody = document.getElementById('fleet-table-body');
+      if (vehicles.length === 0) {
+        tbody.innerHTML = `<tr class="table-empty"><td colspan="7">No vehicles registered yet.</td></tr>`;
+      } else {
+        const statusBadge = { parked: 'badge-parked', moving: 'badge-moving', offline: 'badge-offline', alert: 'badge-alert' };
+        tbody.innerHTML = vehicles.map(v => {
+          const customer = v.customerId ? findCustomerById(v.customerId) : null;
+          const tracker = v.trackerId ? getTrackerById(v.trackerId) : null;
+          return `
+            <tr>
+              <td><strong>${v.make} ${v.model}</strong><br><span style="font-size:12px;color:var(--text-muted)">${v.year} · ${v.color}</span></td>
+              <td style="font-family:monospace;font-weight:700;">${v.plate}</td>
+              <td><span class="badge ${statusBadge[v.status] || 'badge-muted'}">${v.status.charAt(0).toUpperCase() + v.status.slice(1)}</span></td>
+              <td>${customer ? customer.name : '<span style="color:var(--text-muted)">Unassigned</span>'}</td>
+              <td>${tracker ? `<span style="font-family:monospace;font-size:12px">${tracker.serialNumber}</span>` : '<span style="color:var(--text-muted)">None</span>'}</td>
+              <td>${v.speed} km/h</td>
+              <td>${getBatteryBarHtml(v.battery)}</td>
+            </tr>
+          `;
+        }).join('');
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bamu Owners — Customers</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./src/css/bamu-owners.css">
+</head>
+<body>
+  <div class="app-shell">
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <div class="brand-name">Bamu</div>
+        <div class="brand-tagline">Owners Dashboard</div>
+      </div>
+      <nav class="sidebar-nav">
+        <a href="./index.html">
+          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          Fleet Dashboard
+        </a>
+        <a href="./customers.html" class="active">
+          <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          Customers
+        </a>
+        <a href="./vehicles.html">
+          <svg viewBox="0 0 24 24"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+          Vehicles
+        </a>
+        <a href="./trackers.html">
+          <svg viewBox="0 0 24 24"><path d="M12 2L3 7v5c0 5.25 3.75 10.15 9 11.25C17.25 22.15 21 17.25 21 12V7L12 2z"/><circle cx="12" cy="12" r="3"/></svg>
+          Trackers
+        </a>
+        <a href="./map.html">
+          <svg viewBox="0 0 24 24"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
+          Fleet Map
+        </a>
+        <a href="./alerts.html">
+          <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          Alerts
+          <span id="alerts-nav-badge" class="nav-badge" style="display:none">0</span>
+        </a>
+      </nav>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+      <div class="page-header">
+        <div class="page-header-left">
+          <h1>Customers</h1>
+          <p>Manage registered customer accounts</p>
+        </div>
+        <button id="add-customer-btn" class="btn btn-primary">
+          <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Add Customer
+        </button>
+      </div>
+
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Phone</th>
+              <th>Linked Vehicle</th>
+              <th>Joined</th>
+              <th style="text-align:right">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="customers-tbody">
+            <!-- Populated by JS -->
+          </tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+
+  <!-- ADD/EDIT CUSTOMER MODAL -->
+  <dialog id="customer-modal">
+    <div class="modal-header">
+      <h2 id="modal-title">Add Customer</h2>
+      <button class="modal-close-btn" id="modal-close">✕</button>
+    </div>
+    <div class="modal-body">
+      <form id="customer-form" novalidate>
+        <input type="hidden" id="edit-id" value="">
+        <div class="form-group">
+          <label class="form-label" for="f-name">Full Name <span class="required">*</span></label>
+          <input type="text" id="f-name" class="form-input" placeholder="e.g. Thabo Nkosi" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="f-email">Email <span class="required">*</span></label>
+          <input type="email" id="f-email" class="form-input" placeholder="customer@example.com" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="f-password">Password <span class="required">*</span></label>
+          <input type="text" id="f-password" class="form-input" placeholder="Login password for customer">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="f-phone">Phone Number</label>
+          <input type="tel" id="f-phone" class="form-input" placeholder="+27 71 234 5678">
+        </div>
+        <div id="form-error" style="color:var(--danger);font-size:13px;margin-top:4px;display:none;"></div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" id="modal-cancel">Cancel</button>
+      <button type="button" class="btn btn-primary" id="modal-save">Save Customer</button>
+    </div>
+  </dialog>
+
+  <script type="module">
+    import { getCustomers, addCustomer, updateCustomer, deleteCustomer, getVehicleById, getAlerts } from './src/js/storage.js';
+
+    // Nav badge
+    const unread = getAlerts().filter(a => !a.read).length;
+    const navBadge = document.getElementById('alerts-nav-badge');
+    if (navBadge && unread > 0) { navBadge.textContent = unread; navBadge.style.display = 'inline-flex'; }
+
+    function formatDate(iso) {
+      if (!iso) return '—';
+      return new Date(iso).toLocaleDateString('en-ZA', { day: '2-digit', month: 'short', year: 'numeric' });
+    }
+
+    function renderTable() {
+      const customers = getCustomers();
+      const tbody = document.getElementById('customers-tbody');
+
+      if (customers.length === 0) {
+        tbody.innerHTML = `<tr class="table-empty"><td colspan="6">No customers yet. Add your first customer.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = customers.map(c => {
+        const vehicle = c.vehicleId ? getVehicleById(c.vehicleId) : null;
+        return `
+          <tr>
+            <td>
+              <div style="font-weight:600">${c.name}</div>
+              <div style="font-size:12px;color:var(--text-muted)">ID: ${c.id}</div>
+            </td>
+            <td>${c.email}</td>
+            <td>${c.phone || '—'}</td>
+            <td>${vehicle ? `<span style="font-family:monospace;font-size:13px">${vehicle.plate}</span><br><span style="font-size:12px;color:var(--text-muted)">${vehicle.make} ${vehicle.model}</span>` : '<span style="color:var(--text-muted)">None</span>'}</td>
+            <td>${formatDate(c.createdAt)}</td>
+            <td>
+              <div class="table-actions">
+                <button class="btn btn-ghost btn-xs edit-btn" data-id="${c.id}">Edit</button>
+                <button class="btn btn-ghost-danger btn-xs delete-btn" data-id="${c.id}">Delete</button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+      // Edit
+      tbody.querySelectorAll('.edit-btn').forEach(btn => {
+        btn.addEventListener('click', () => openEditModal(btn.dataset.id));
+      });
+
+      // Delete
+      tbody.querySelectorAll('.delete-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          if (confirm('Delete this customer? This cannot be undone.')) {
+            deleteCustomer(btn.dataset.id);
+            renderTable();
+          }
+        });
+      });
+    }
+
+    const modal = document.getElementById('customer-modal');
+    const form = document.getElementById('customer-form');
+
+    function openAddModal() {
+      document.getElementById('modal-title').textContent = 'Add Customer';
+      document.getElementById('edit-id').value = '';
+      form.reset();
+      document.getElementById('form-error').style.display = 'none';
+      document.getElementById('f-password').required = true;
+      modal.showModal();
+    }
+
+    function openEditModal(id) {
+      const customers = getCustomers();
+      const c = customers.find(x => x.id === id);
+      if (!c) return;
+      document.getElementById('modal-title').textContent = 'Edit Customer';
+      document.getElementById('edit-id').value = c.id;
+      document.getElementById('f-name').value = c.name;
+      document.getElementById('f-email').value = c.email;
+      document.getElementById('f-password').value = c.password || '';
+      document.getElementById('f-phone').value = c.phone || '';
+      document.getElementById('form-error').style.display = 'none';
+      document.getElementById('f-password').required = false;
+      modal.showModal();
+    }
+
+    function closeModal() { modal.close(); }
+
+    document.getElementById('add-customer-btn').addEventListener('click', openAddModal);
+    document.getElementById('modal-close').addEventListener('click', closeModal);
+    document.getElementById('modal-cancel').addEventListener('click', closeModal);
+
+    document.getElementById('modal-save').addEventListener('click', () => {
+      const name = document.getElementById('f-name').value.trim();
+      const email = document.getElementById('f-email').value.trim();
+      const password = document.getElementById('f-password').value.trim();
+      const phone = document.getElementById('f-phone').value.trim();
+      const editId = document.getElementById('edit-id').value;
+      const errEl = document.getElementById('form-error');
+
+      if (!name || !email) {
+        errEl.textContent = 'Name and email are required.';
+        errEl.style.display = 'block';
+        return;
+      }
+
+      if (!editId && !password) {
+        errEl.textContent = 'Password is required for new customers.';
+        errEl.style.display = 'block';
+        return;
+      }
+
+      if (editId) {
+        const updateData = { name, email, phone };
+        if (password) updateData.password = password;
+        updateCustomer(editId, updateData);
+      } else {
+        addCustomer({ name, email, password, phone, vehicleId: null });
+      }
+
+      closeModal();
+      renderTable();
+    });
+
+    document.addEventListener('DOMContentLoaded', renderTable);
+  </script>
+</body>
+</html>
