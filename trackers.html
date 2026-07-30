@@ -3,11 +3,33 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Bamu Owners — Trackers</title>
+  <title>Bamu Tracker — Trackers</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./src/css/bamu-owners.css">
+  <style>
+    .power-badge { display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:600; }
+    .power-battery { background:#DBEAFE;color:#1D4ED8; }
+    .power-hardwired { background:#D1FAE5;color:#047857; }
+    .power-obd { background:#FFEDD5;color:#C2410C; }
+    .tracker-detail { font-size:12px;color:var(--text-muted);margin-top:2px; }
+    .battery-wrap { display:flex;align-items:center;gap:8px; }
+    .battery-track { flex:1;min-width:50px;height:6px;background:#E5E7EB;border-radius:99px;overflow:hidden; }
+    .battery-fill { height:100%;border-radius:99px;transition:width .3s; }
+    .fill-high { background:var(--success); }
+    .fill-mid  { background:var(--warning); }
+    .fill-low  { background:var(--danger); }
+    .power-icon { font-size:16px; }
+    #power-source-field { transition:opacity .2s; }
+    .status-online    { background:#D1FAE5;color:#047857; }
+    .status-offline   { background:#F3F4F6;color:#6B7280; }
+    .status-unassigned{ background:#FEF3C7;color:#D97706; }
+    .status-no-signal { background:#FFEDD5;color:#C2410C; }
+    .status-tampered  { background:#FEE2E2;color:#DC2626; }
+    .status-low-battery{ background:#FEF3C7;color:#D97706; }
+    .detail-grid { display:grid;grid-template-columns:1fr 1fr;gap:0; }
+  </style>
 </head>
 <body>
   <div class="app-shell">
@@ -15,12 +37,12 @@
     <aside class="sidebar">
       <div class="sidebar-brand">
         <div class="brand-name">Bamu</div>
-        <div class="brand-tagline">Owners Dashboard</div>
+        <div class="brand-tagline">Bamu Tracker</div>
       </div>
       <nav class="sidebar-nav">
         <a href="./index.html">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
-          Fleet Dashboard
+          Dashboard
         </a>
         <a href="./customers.html">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
@@ -36,7 +58,7 @@
         </a>
         <a href="./map.html">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
-          Fleet Map
+          Tracker Map
         </a>
         <a href="./alerts.html">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
@@ -51,7 +73,7 @@
       <div class="page-header">
         <div class="page-header-left">
           <h1>Trackers</h1>
-          <p>Manage Vo GPS tracking devices</p>
+          <p>Manage installed GPS tracking devices</p>
         </div>
         <button id="add-tracker-btn" class="btn btn-primary">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
@@ -59,135 +81,332 @@
         </button>
       </div>
 
-      <!-- Stats row -->
-      <div class="stats-row" id="tracker-stats" style="margin-bottom:24px;display:grid;grid-template-columns:repeat(3,1fr);gap:16px;">
+      <!-- Stats -->
+      <div class="stats-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:24px">
         <div class="stat-card">
-          <div class="stat-value" id="stat-total">0</div>
-          <div class="stat-label">Total Trackers</div>
+          <div class="stat-card-top">
+            <span class="stat-card-label">Total</span>
+            <div class="stat-card-icon teal">
+              <svg viewBox="0 0 24 24"><path d="M12 2L3 7v5c0 5.25 3.75 10.15 9 11.25C17.25 22.15 21 17.25 21 12V7L12 2z"/><circle cx="12" cy="12" r="3"/></svg>
+            </div>
+          </div>
+          <div class="stat-card-value" id="stat-total">0</div>
+          <div class="stat-card-sub">Trackers registered</div>
         </div>
         <div class="stat-card">
-          <div class="stat-value" id="stat-active" style="color:var(--primary)">0</div>
-          <div class="stat-label">Active</div>
+          <div class="stat-card-top">
+            <span class="stat-card-label">Online</span>
+            <div class="stat-card-icon green">
+              <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+          </div>
+          <div class="stat-card-value" id="stat-online" style="color:var(--success)">0</div>
+          <div class="stat-card-sub">Currently active</div>
         </div>
         <div class="stat-card">
-          <div class="stat-value" id="stat-unassigned" style="color:var(--warning)">0</div>
-          <div class="stat-label">Unassigned</div>
+          <div class="stat-card-top">
+            <span class="stat-card-label">Unassigned</span>
+            <div class="stat-card-icon amber">
+              <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            </div>
+          </div>
+          <div class="stat-card-value" id="stat-unassigned" style="color:var(--warning)">0</div>
+          <div class="stat-card-sub">Not fitted to a vehicle</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-top">
+            <span class="stat-card-label">Attention</span>
+            <div class="stat-card-icon red">
+              <svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            </div>
+          </div>
+          <div class="stat-card-value" id="stat-attention" style="color:var(--danger)">0</div>
+          <div class="stat-card-sub">Offline / tampered</div>
         </div>
       </div>
 
+      <!-- Table -->
       <div class="table-container">
-        <table class="data-table">
+        <table class="data-table" id="trackers-table">
           <thead>
             <tr>
-              <th>Serial Number</th>
-              <th>Brand</th>
+              <th>Device</th>
+              <th>Power Source</th>
               <th>Status</th>
-              <th>Battery</th>
+              <th>Battery / Power</th>
               <th>Assigned Vehicle</th>
-              <th>Last Ping</th>
+              <th>Last Contact</th>
               <th style="text-align:right">Actions</th>
             </tr>
           </thead>
           <tbody id="trackers-tbody"></tbody>
         </table>
-        <div id="trackers-empty" class="empty-state" style="display:none">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="48" height="48"><path d="M12 2L3 7v5c0 5.25 3.75 10.15 9 11.25C17.25 22.15 21 17.25 21 12V7L12 2z"/><circle cx="12" cy="12" r="3"/></svg>
-          <h3>No trackers yet</h3>
-          <p>Add your first Vo GPS tracker to get started.</p>
+        <div id="trackers-empty" class="empty-state" style="display:none;flex-direction:column;align-items:center;gap:10px">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="52" height="52" style="stroke:#D1D5DB"><path d="M12 2L3 7v5c0 5.25 3.75 10.15 9 11.25C17.25 22.15 21 17.25 21 12V7L12 2z"/><circle cx="12" cy="12" r="3"/></svg>
+          <h3>No trackers added yet</h3>
+          <p>Add your first GPS tracker to begin tracking vehicles.</p>
           <button class="btn btn-primary" onclick="document.getElementById('add-tracker-btn').click()">Add Tracker</button>
         </div>
       </div>
     </main>
   </div>
 
-  <!-- ADD/EDIT TRACKER MODAL -->
+  <!-- ADD / EDIT TRACKER MODAL -->
   <dialog id="tracker-modal">
     <div class="modal-header">
       <h2 id="tracker-modal-title">Add Tracker</h2>
-      <button class="modal-close" id="tracker-modal-close" aria-label="Close">&times;</button>
+      <button class="modal-close-btn" id="tracker-modal-close" aria-label="Close">✕</button>
     </div>
-    <form id="tracker-form" novalidate>
-      <input type="hidden" id="tracker-id" />
-      <div class="form-group">
-        <label class="form-label" for="tracker-serial">Serial Number <span class="required">*</span></label>
-        <input type="text" id="tracker-serial" class="form-input" placeholder="e.g. VO-2024-A005" required />
-      </div>
-      <div class="form-group">
-        <label class="form-label" for="tracker-brand">Brand</label>
-        <input type="text" id="tracker-brand" class="form-input" value="Vo" placeholder="Vo" />
-      </div>
-      <div class="form-group">
-        <label class="form-label" for="tracker-battery">Battery %</label>
-        <input type="number" id="tracker-battery" class="form-input" min="0" max="100" value="100" />
-      </div>
-      <div class="form-group">
-        <label class="form-label" for="tracker-vehicle">Assign to Vehicle (optional)</label>
-        <select id="tracker-vehicle" class="form-input">
-          <option value="">— Unassigned —</option>
-        </select>
-      </div>
-      <div class="form-error" id="tracker-form-error" style="display:none"></div>
-      <div class="modal-actions">
-        <button type="button" class="btn btn-secondary" id="tracker-cancel-btn">Cancel</button>
-        <button type="submit" class="btn btn-primary" id="tracker-save-btn">Save Tracker</button>
-      </div>
-    </form>
+    <div class="modal-body">
+      <form id="tracker-form" novalidate>
+        <input type="hidden" id="tracker-id" />
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="tracker-serial">Serial Number <span class="required">*</span></label>
+            <input type="text" id="tracker-serial" class="form-input" placeholder="e.g. VO-2024-A005" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="tracker-brand">Brand</label>
+            <input type="text" id="tracker-brand" class="form-input" value="Vo" placeholder="Vo" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="tracker-imei">IMEI Number</label>
+          <input type="text" id="tracker-imei" class="form-input" placeholder="e.g. 356938035643809" maxlength="20" />
+          <div style="font-size:12px;color:var(--text-muted);margin-top:4px">15-digit unique device identifier printed on the tracker</div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="tracker-sim">SIM Card Number</label>
+            <input type="text" id="tracker-sim" class="form-input" placeholder="e.g. +27 82 000 1234" />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="tracker-install-date">Installation Date</label>
+            <input type="date" id="tracker-install-date" class="form-input" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="tracker-power">Power Source <span class="required">*</span></label>
+          <select id="tracker-power" class="form-input" required>
+            <option value="">— Select power source —</option>
+            <option value="hardwired">🔌 Hardwired (connected to vehicle wiring)</option>
+            <option value="obd">🔌 OBD-II Port (plugs into diagnostic port)</option>
+            <option value="battery">🔋 Internal Battery (self-powered)</option>
+          </select>
+          <div style="font-size:12px;color:var(--text-muted);margin-top:4px" id="power-hint"></div>
+        </div>
+
+        <div class="form-group" id="battery-pct-group" style="display:none">
+          <label class="form-label" for="tracker-battery">Battery Level %</label>
+          <input type="number" id="tracker-battery" class="form-input" min="0" max="100" value="100" placeholder="0–100" />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="tracker-status">Status</label>
+          <select id="tracker-status" class="form-input">
+            <option value="unassigned">Unassigned</option>
+            <option value="online">Online</option>
+            <option value="offline">Offline</option>
+            <option value="no-signal">No Signal</option>
+            <option value="tampered">Tampered</option>
+            <option value="low-battery">Low Battery</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="tracker-vehicle">Assign to Vehicle (optional)</label>
+          <select id="tracker-vehicle" class="form-input">
+            <option value="">— Not assigned —</option>
+          </select>
+        </div>
+
+        <div class="form-error" id="tracker-form-error" style="display:none;color:var(--danger);font-size:13px;padding:8px 12px;background:var(--danger-light);border-radius:6px;margin-top:4px"></div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" id="tracker-cancel-btn">Cancel</button>
+      <button type="button" class="btn btn-primary" id="tracker-save-btn">Save Tracker</button>
+    </div>
+  </dialog>
+
+  <!-- DETAIL MODAL -->
+  <dialog id="detail-modal">
+    <div class="modal-header">
+      <h2 id="detail-title">Tracker Details</h2>
+      <button class="modal-close-btn" id="detail-modal-close" aria-label="Close">✕</button>
+    </div>
+    <div class="modal-body" id="detail-body" style="padding:0"></div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" id="detail-close-btn">Close</button>
+      <button type="button" class="btn btn-primary" id="detail-edit-btn">Edit Tracker</button>
+    </div>
   </dialog>
 
   <script type="module">
     import {
       getTrackers, addTracker, updateTracker, deleteTracker,
       getVehicles, getVehicleById, updateVehicle,
-      getAlerts, generateId
+      getAlerts
     } from './src/js/storage.js';
 
     // Alerts badge
     const unread = getAlerts().filter(a => !a.read).length;
     if (unread > 0) {
       const badge = document.getElementById('alerts-nav-badge');
-      badge.textContent = unread;
-      badge.style.display = 'inline-flex';
+      badge.textContent = unread; badge.style.display = 'inline-flex';
     }
 
+    // ---- POWER SOURCE HELPERS ----
+    const POWER_CONFIG = {
+      hardwired: { label:'Hardwired', cls:'power-hardwired', icon:'🔌', hint:'Draws power directly from the vehicle — always on while engine is connected.' },
+      obd:       { label:'OBD-II Port', cls:'power-obd', icon:'🔌', hint:'Plugs into the OBD-II diagnostic port under the dash — no installation required.' },
+      battery:   { label:'Internal Battery', cls:'power-battery', icon:'🔋', hint:'Self-powered battery. Monitor charge level and recharge as needed.' },
+    };
+
+    const STATUS_CONFIG = {
+      'online':       { label:'Online',       cls:'status-online' },
+      'offline':      { label:'Offline',      cls:'status-offline' },
+      'unassigned':   { label:'Unassigned',   cls:'status-unassigned' },
+      'no-signal':    { label:'No Signal',    cls:'status-no-signal' },
+      'tampered':     { label:'Tampered',     cls:'status-tampered' },
+      'low-battery':  { label:'Low Battery',  cls:'status-low-battery' },
+    };
+
+    function statusBadge(status) {
+      const s = STATUS_CONFIG[status] || { label: status, cls:'status-offline' };
+      return `<span class="badge ${s.cls}">${s.label}</span>`;
+    }
+
+    function powerBadge(source) {
+      const p = POWER_CONFIG[source] || { label: source || '—', cls:'', icon:'' };
+      return `<span class="power-badge ${p.cls}">${p.icon} ${p.label}</span>`;
+    }
+
+    function batteryCell(tracker) {
+      if (tracker.powerSource === 'hardwired') return '<span style="color:var(--success);font-size:13px">⚡ Powered by vehicle</span>';
+      if (tracker.powerSource === 'obd') return '<span style="color:var(--accent);font-size:13px">⚡ OBD power</span>';
+      const pct = tracker.battery ?? 0;
+      const cls = pct >= 60 ? 'fill-high' : pct >= 30 ? 'fill-mid' : 'fill-low';
+      return `<div class="battery-wrap">
+        <div class="battery-track"><div class="battery-fill ${cls}" style="width:${pct}%"></div></div>
+        <span style="font-size:13px;font-weight:600;min-width:34px">${pct}%</span>
+      </div>`;
+    }
+
+    function relativeTime(iso) {
+      if (!iso) return '—';
+      const diff = (Date.now() - new Date(iso).getTime()) / 1000;
+      if (diff < 60) return 'Just now';
+      if (diff < 3600) return `${Math.floor(diff/60)}m ago`;
+      if (diff < 86400) return `${Math.floor(diff/3600)}h ago`;
+      return new Date(iso).toLocaleDateString('en-ZA', { day:'2-digit', month:'short', year:'numeric' });
+    }
+
+    // ---- RENDER ----
+    function renderTable() {
+      const trackers = getTrackers();
+      const tbody = document.getElementById('trackers-tbody');
+      const table = document.getElementById('trackers-table');
+      const empty = document.getElementById('trackers-empty');
+
+      // Stats
+      document.getElementById('stat-total').textContent = trackers.length;
+      document.getElementById('stat-online').textContent = trackers.filter(t => t.status === 'online').length;
+      document.getElementById('stat-unassigned').textContent = trackers.filter(t => t.status === 'unassigned' || !t.vehicleId).length;
+      document.getElementById('stat-attention').textContent = trackers.filter(t => ['offline','tampered','no-signal'].includes(t.status)).length;
+
+      if (!trackers.length) {
+        table.style.display = 'none'; empty.style.display = 'flex'; return;
+      }
+      table.style.display = ''; empty.style.display = 'none';
+
+      tbody.innerHTML = trackers.map(t => {
+        const vehicle = t.vehicleId ? getVehicleById(t.vehicleId) : null;
+        const vehicleTxt = vehicle
+          ? `<strong>${vehicle.make} ${vehicle.model}</strong><br><span style="font-size:12px;font-family:monospace;color:var(--text-muted)">${vehicle.plate}</span>`
+          : '<span style="color:var(--text-muted)">—</span>';
+        return `<tr>
+          <td>
+            <div style="font-weight:700;font-family:monospace;letter-spacing:.5px">${t.serialNumber}</div>
+            <div class="tracker-detail">${t.brand || 'Vo'}${t.imei ? ' · IMEI: '+t.imei.slice(-6).padStart(t.imei.length,'*') : ''}${t.simNumber ? ' · SIM: '+t.simNumber : ''}</div>
+          </td>
+          <td>${powerBadge(t.powerSource)}</td>
+          <td>${statusBadge(t.status)}</td>
+          <td>${batteryCell(t)}</td>
+          <td>${vehicleTxt}</td>
+          <td style="font-size:13px;color:var(--text-muted)">${relativeTime(t.lastPing)}</td>
+          <td>
+            <div class="table-actions">
+              <button class="btn btn-ghost btn-xs" onclick="viewTracker('${t.id}')">View</button>
+              <button class="btn btn-ghost btn-xs" onclick="editTracker('${t.id}')">Edit</button>
+              <button class="btn btn-ghost-danger btn-xs" onclick="removeTracker('${t.id}')">Delete</button>
+            </div>
+          </td>
+        </tr>`;
+      }).join('');
+    }
+
+    // ---- MODAL ----
     const modal = document.getElementById('tracker-modal');
-    const form = document.getElementById('tracker-form');
-    const titleEl = document.getElementById('tracker-modal-title');
     const errorEl = document.getElementById('tracker-form-error');
 
-    function getVehicleDropdown() {
-      const vehicles = getVehicles();
+    const powerSel = document.getElementById('tracker-power');
+    const battGroup = document.getElementById('battery-pct-group');
+    const powerHint = document.getElementById('power-hint');
+
+    powerSel.addEventListener('change', () => {
+      const val = powerSel.value;
+      battGroup.style.display = val === 'battery' ? '' : 'none';
+      powerHint.textContent = POWER_CONFIG[val]?.hint || '';
+    });
+
+    function populateVehicleDropdown(currentVehicleId) {
       const trackers = getTrackers();
-      const assignedVehicleIds = new Set(trackers.map(t => t.vehicleId).filter(Boolean));
+      const usedVehicleIds = new Set(trackers.map(t => t.vehicleId).filter(Boolean));
       const sel = document.getElementById('tracker-vehicle');
-      const currentTrackerVehicle = document.getElementById('tracker-id').value
-        ? (getTrackers().find(t => t.id === document.getElementById('tracker-id').value) || {}).vehicleId
-        : null;
-      sel.innerHTML = '<option value="">— Unassigned —</option>';
-      vehicles.forEach(v => {
-        if (!assignedVehicleIds.has(v.id) || v.id === currentTrackerVehicle) {
-          const opt = document.createElement('option');
-          opt.value = v.id;
-          opt.textContent = `${v.make} ${v.model} (${v.plate})`;
-          sel.appendChild(opt);
+      sel.innerHTML = '<option value="">— Not assigned —</option>';
+      getVehicles().forEach(v => {
+        if (!usedVehicleIds.has(v.id) || v.id === currentVehicleId) {
+          const o = document.createElement('option');
+          o.value = v.id;
+          o.textContent = `${v.make} ${v.model} (${v.plate})`;
+          sel.appendChild(o);
         }
       });
     }
 
     function openModal(tracker = null) {
-      form.reset();
+      document.getElementById('tracker-form').reset();
       errorEl.style.display = 'none';
-      document.getElementById('tracker-id').value = tracker ? tracker.id : '';
-      titleEl.textContent = tracker ? 'Edit Tracker' : 'Add Tracker';
+      battGroup.style.display = 'none';
+      powerHint.textContent = '';
+      const id = tracker?.id || '';
+      document.getElementById('tracker-id').value = id;
+      document.getElementById('tracker-modal-title').textContent = tracker ? 'Edit Tracker' : 'Add Tracker';
+
       if (tracker) {
         document.getElementById('tracker-serial').value = tracker.serialNumber || '';
         document.getElementById('tracker-brand').value = tracker.brand || 'Vo';
-        document.getElementById('tracker-battery').value = tracker.battery || 100;
-        getVehicleDropdown();
+        document.getElementById('tracker-imei').value = tracker.imei || '';
+        document.getElementById('tracker-sim').value = tracker.simNumber || '';
+        document.getElementById('tracker-install-date').value = tracker.installDate ? tracker.installDate.slice(0,10) : '';
+        document.getElementById('tracker-power').value = tracker.powerSource || '';
+        document.getElementById('tracker-status').value = tracker.status || 'unassigned';
+        if (tracker.powerSource === 'battery') {
+          battGroup.style.display = '';
+          document.getElementById('tracker-battery').value = tracker.battery ?? 100;
+        }
+        powerHint.textContent = POWER_CONFIG[tracker.powerSource]?.hint || '';
+        populateVehicleDropdown(tracker.vehicleId);
         document.getElementById('tracker-vehicle').value = tracker.vehicleId || '';
       } else {
         document.getElementById('tracker-brand').value = 'Vo';
-        document.getElementById('tracker-battery').value = 100;
-        getVehicleDropdown();
+        document.getElementById('tracker-status').value = 'unassigned';
+        populateVehicleDropdown(null);
       }
       modal.showModal();
     }
@@ -197,119 +416,103 @@
     document.getElementById('tracker-cancel-btn').addEventListener('click', closeModal);
     document.getElementById('add-tracker-btn').addEventListener('click', () => openModal());
 
-    function getBatteryColor(pct) {
-      if (pct >= 60) return 'var(--success)';
-      if (pct >= 30) return 'var(--warning)';
-      return 'var(--danger)';
-    }
-
-    function formatDate(iso) {
-      if (!iso) return '—';
-      const d = new Date(iso);
-      return d.toLocaleDateString('en-ZA', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
-    }
-
-    function renderTable() {
-      const trackers = getTrackers();
-      const tbody = document.getElementById('trackers-tbody');
-      const empty = document.getElementById('trackers-empty');
-      document.getElementById('stat-total').textContent = trackers.length;
-      document.getElementById('stat-active').textContent = trackers.filter(t => t.status === 'active').length;
-      document.getElementById('stat-unassigned').textContent = trackers.filter(t => t.status === 'unassigned' || !t.vehicleId).length;
-
-      if (!trackers.length) {
-        tbody.innerHTML = '';
-        document.querySelector('.table-container table').style.display = 'none';
-        empty.style.display = 'flex';
-        return;
-      }
-      document.querySelector('.table-container table').style.display = '';
-      empty.style.display = 'none';
-
-      tbody.innerHTML = trackers.map(t => {
-        const vehicle = t.vehicleId ? getVehicleById(t.vehicleId) : null;
-        const vehicleLabel = vehicle ? `${vehicle.make} ${vehicle.model} <span style="color:var(--text-muted);font-size:12px">(${vehicle.plate})</span>` : '<span style="color:var(--text-muted)">Unassigned</span>';
-        const statusClass = t.status === 'active' ? 'success' : t.status === 'offline' ? 'danger' : 'warning';
-        const statusLabel = t.status === 'active' ? 'Active' : t.status === 'offline' ? 'Offline' : 'Unassigned';
-        const battPct = t.battery || 0;
-        return `
-          <tr>
-            <td>
-              <div style="font-weight:600;font-family:monospace;letter-spacing:0.5px">${t.serialNumber}</div>
-            </td>
-            <td>
-              <span class="badge badge-info">${t.brand || 'Vo'}</span>
-            </td>
-            <td><span class="badge badge-${statusClass}">${statusLabel}</span></td>
-            <td>
-              <div style="display:flex;align-items:center;gap:8px">
-                <div style="flex:1;height:6px;background:#E5E7EB;border-radius:99px;overflow:hidden;min-width:60px">
-                  <div style="width:${battPct}%;height:100%;background:${getBatteryColor(battPct)};border-radius:99px;transition:width 0.3s"></div>
-                </div>
-                <span style="font-size:13px;font-weight:500;min-width:32px">${battPct}%</span>
-              </div>
-            </td>
-            <td>${vehicleLabel}</td>
-            <td style="font-size:13px;color:var(--text-muted)">${formatDate(t.lastPing)}</td>
-            <td>
-              <div style="display:flex;justify-content:flex-end;gap:8px">
-                <button class="btn btn-sm btn-secondary" onclick="editTracker('${t.id}')">Edit</button>
-                <button class="btn btn-sm btn-danger" onclick="removeTracker('${t.id}')">Delete</button>
-              </div>
-            </td>
-          </tr>`;
-      }).join('');
-    }
-
-    window.editTracker = (id) => {
-      const tracker = getTrackers().find(t => t.id === id);
-      if (tracker) openModal(tracker);
-    };
-
-    window.removeTracker = (id) => {
-      const tracker = getTrackers().find(t => t.id === id);
-      if (!tracker) return;
-      if (!confirm(`Delete tracker ${tracker.serialNumber}? This cannot be undone.`)) return;
-      // Unlink from vehicle
-      if (tracker.vehicleId) updateVehicle(tracker.vehicleId, { trackerId: null });
-      deleteTracker(id);
-      renderTable();
-    };
-
-    form.addEventListener('submit', (e) => {
-      e.preventDefault();
+    document.getElementById('tracker-save-btn').addEventListener('click', () => {
       errorEl.style.display = 'none';
       const serial = document.getElementById('tracker-serial').value.trim();
       const brand = document.getElementById('tracker-brand').value.trim() || 'Vo';
-      const battery = parseInt(document.getElementById('tracker-battery').value, 10) || 100;
+      const imei = document.getElementById('tracker-imei').value.trim();
+      const simNumber = document.getElementById('tracker-sim').value.trim();
+      const installDate = document.getElementById('tracker-install-date').value || null;
+      const powerSource = document.getElementById('tracker-power').value;
+      const status = document.getElementById('tracker-status').value || 'unassigned';
+      const battery = powerSource === 'battery' ? (parseInt(document.getElementById('tracker-battery').value) || 100) : null;
       const vehicleId = document.getElementById('tracker-vehicle').value || null;
       const id = document.getElementById('tracker-id').value;
 
-      if (!serial) { errorEl.textContent = 'Serial number is required.'; errorEl.style.display = 'block'; return; }
+      if (!serial) { showError('Serial number is required.'); return; }
+      if (!powerSource) { showError('Please select a power source.'); return; }
 
-      // Check duplicate serial
-      const existing = getTrackers().find(t => t.serialNumber === serial && t.id !== id);
-      if (existing) { errorEl.textContent = 'A tracker with this serial number already exists.'; errorEl.style.display = 'block'; return; }
+      const dupe = getTrackers().find(t => t.serialNumber === serial && t.id !== id);
+      if (dupe) { showError('A tracker with this serial number already exists.'); return; }
+
+      const data = { serialNumber: serial, brand, imei, simNumber, installDate, powerSource, status, battery, vehicleId,
+        lastPing: vehicleId ? (id ? (getTrackers().find(t=>t.id===id)?.lastPing || new Date().toISOString()) : new Date().toISOString()) : null };
 
       if (id) {
-        const oldTracker = getTrackers().find(t => t.id === id);
-        // Unlink old vehicle if changed
-        if (oldTracker && oldTracker.vehicleId && oldTracker.vehicleId !== vehicleId) {
-          updateVehicle(oldTracker.vehicleId, { trackerId: null });
-        }
-        const status = vehicleId ? 'active' : 'unassigned';
-        updateTracker(id, { serialNumber: serial, brand, battery, vehicleId, status });
+        const old = getTrackers().find(t => t.id === id);
+        if (old?.vehicleId && old.vehicleId !== vehicleId) updateVehicle(old.vehicleId, { trackerId: null });
+        updateTracker(id, data);
+        if (vehicleId) updateVehicle(vehicleId, { trackerId: id });
       } else {
-        const status = vehicleId ? 'active' : 'unassigned';
-        addTracker({ serialNumber: serial, brand, battery, vehicleId, status, lastPing: vehicleId ? new Date().toISOString() : null });
+        const newT = addTracker(data);
+        if (vehicleId) updateVehicle(vehicleId, { trackerId: newT.id });
       }
-
-      // Link vehicle to tracker
-      if (vehicleId) updateVehicle(vehicleId, { trackerId: id || getTrackers().at(-1)?.id });
 
       closeModal();
       renderTable();
     });
+
+    function showError(msg) {
+      errorEl.textContent = msg; errorEl.style.display = 'block';
+    }
+
+    // ---- VIEW DETAIL ----
+    let _detailId = null;
+    const detailModal = document.getElementById('detail-modal');
+
+    window.viewTracker = (id) => {
+      _detailId = id;
+      const t = getTrackers().find(x => x.id === id);
+      if (!t) return;
+      const vehicle = t.vehicleId ? getVehicleById(t.vehicleId) : null;
+      const p = POWER_CONFIG[t.powerSource] || {};
+      document.getElementById('detail-title').textContent = t.serialNumber;
+
+      const rows = [
+        ['Brand', t.brand || 'Vo'],
+        ['Serial Number', `<span style="font-family:monospace">${t.serialNumber}</span>`],
+        ['IMEI', t.imei || '—'],
+        ['SIM Card', t.simNumber || '—'],
+        ['Power Source', powerBadge(t.powerSource)],
+        ['Status', statusBadge(t.status)],
+        ['Battery', t.powerSource==='battery' ? `${t.battery ?? '—'}%` : (t.powerSource==='hardwired'?'⚡ Vehicle power':'⚡ OBD power')],
+        ['Assigned Vehicle', vehicle ? `${vehicle.make} ${vehicle.model} — ${vehicle.plate}` : '—'],
+        ['Install Date', t.installDate ? new Date(t.installDate).toLocaleDateString('en-ZA',{day:'2-digit',month:'long',year:'numeric'}) : '—'],
+        ['Last Contact', t.lastPing ? new Date(t.lastPing).toLocaleString('en-ZA') : '—'],
+      ];
+
+      document.getElementById('detail-body').innerHTML = `
+        <div style="padding:0 24px">
+          ${rows.map(([k,v]) => `
+            <div class="info-row">
+              <span class="label">${k}</span>
+              <span class="value">${v}</span>
+            </div>`).join('')}
+        </div>`;
+      detailModal.showModal();
+    };
+
+    document.getElementById('detail-modal-close').addEventListener('click', () => detailModal.close());
+    document.getElementById('detail-close-btn').addEventListener('click', () => detailModal.close());
+    document.getElementById('detail-edit-btn').addEventListener('click', () => {
+      detailModal.close();
+      if (_detailId) editTracker(_detailId);
+    });
+
+    // ---- EDIT / DELETE ----
+    window.editTracker = (id) => {
+      const t = getTrackers().find(x => x.id === id);
+      if (t) openModal(t);
+    };
+
+    window.removeTracker = (id) => {
+      const t = getTrackers().find(x => x.id === id);
+      if (!t) return;
+      if (!confirm(`Delete tracker ${t.serialNumber}?\n\nThis will also unlink it from any assigned vehicle. This cannot be undone.`)) return;
+      if (t.vehicleId) updateVehicle(t.vehicleId, { trackerId: null });
+      deleteTracker(id);
+      renderTable();
+    };
 
     renderTable();
   </script>

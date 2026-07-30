@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Bamu Owners — Fleet Dashboard</title>
+  <title>Bamu Owners — Dashboard</title>
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -16,12 +16,12 @@
     <aside class="sidebar">
       <div class="sidebar-brand">
         <div class="brand-name">Bamu</div>
-        <div class="brand-tagline">Owners Dashboard</div>
+        <div class="brand-tagline">Bamu Tracker</div>
       </div>
       <nav class="sidebar-nav">
         <a href="./index.html" class="active">
           <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-          Fleet Dashboard
+          Dashboard
         </a>
         <a href="./customers.html">
           <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
@@ -37,7 +37,7 @@
         </a>
         <a href="./map.html">
           <svg viewBox="0 0 24 24"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
-          Fleet Map
+          Tracker Map
         </a>
         <a href="./alerts.html">
           <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
@@ -51,8 +51,8 @@
     <main class="main-content">
       <div class="page-header">
         <div class="page-header-left">
-          <h1>Fleet Dashboard</h1>
-          <p>Overview of your entire fleet</p>
+          <h1>Dashboard</h1>
+          <p>Track and manage all your vehicles</p>
         </div>
         <div style="font-size:13px;color:var(--text-muted);" id="last-updated"></div>
       </div>
@@ -70,7 +70,7 @@
         </a>
         <a href="./map.html" class="btn btn-accent">
           <svg viewBox="0 0 24 24"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
-          View Fleet Map
+          View Tracker Map
         </a>
         <a href="./alerts.html" class="btn btn-secondary">
           <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
@@ -78,7 +78,7 @@
         </a>
       </div>
 
-      <!-- 2-col layout: recent alerts + fleet table -->
+      <!-- 2-col layout: recent alerts + vehicles table -->
       <div class="dash-grid-2">
         <!-- Recent Alerts -->
         <div class="card">
@@ -94,7 +94,7 @@
         <!-- Vehicle Status Breakdown -->
         <div class="card">
           <div class="card-header">
-            <h2>Fleet Status</h2>
+            <h2>Vehicle Status</h2>
           </div>
           <div id="fleet-status">
             <!-- Populated by JS -->
@@ -102,8 +102,8 @@
         </div>
       </div>
 
-      <!-- Fleet Overview Table -->
-      <div class="fleet-overview">
+      <!-- Vehicles Overview Table -->
+      <div class="vehicles-overview">
         <h2>All Vehicles</h2>
         <div class="table-container">
           <table class="data-table">
@@ -118,7 +118,7 @@
                 <th>Battery</th>
               </tr>
             </thead>
-            <tbody id="fleet-table-body">
+            <tbody id="vehicles-table-body">
               <!-- Populated by JS -->
             </tbody>
           </table>
@@ -250,7 +250,7 @@
         }).join('') + `</div>`;
       }
 
-      // Fleet Status Breakdown
+      // Vehicle Status Breakdown
       const statusItems = [
         { label: 'Parked', count: parked, badge: 'badge-parked', icon: '🟢' },
         { label: 'Moving', count: moving, badge: 'badge-moving', icon: '🔵' },
@@ -266,13 +266,13 @@
         </div>
       `).join('') + `
         <div class="info-row">
-          <span class="label">Total Fleet</span>
+          <span class="label">Total Vehicles</span>
           <span class="value" style="font-size:18px;">${vehicles.length}</span>
         </div>
       `;
 
-      // Fleet Table
-      const tbody = document.getElementById('fleet-table-body');
+      // Vehicles Table
+      const tbody = document.getElementById('vehicles-table-body');
       if (vehicles.length === 0) {
         tbody.innerHTML = `<tr class="table-empty"><td colspan="7">No vehicles registered yet.</td></tr>`;
       } else {

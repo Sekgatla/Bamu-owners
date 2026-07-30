@@ -215,10 +215,10 @@ export function getSession() {
   ];
 
   const trackers = [
-    { id: 't1', serialNumber: 'VO-2024-A001', brand: 'Vo', vehicleId: 'v1', status: 'active', battery: 87, lastPing: iso(now) },
-    { id: 't2', serialNumber: 'VO-2024-A002', brand: 'Vo', vehicleId: 'v2', status: 'active', battery: 64, lastPing: iso(now) },
-    { id: 't3', serialNumber: 'VO-2024-A003', brand: 'Vo', vehicleId: null, status: 'unassigned', battery: 100, lastPing: null },
-    { id: 't4', serialNumber: 'VO-2024-A004', brand: 'Vo', vehicleId: null, status: 'unassigned', battery: 100, lastPing: null },
+    { id: 't1', serialNumber: 'VO-2024-A001', brand: 'Vo', imei: '356938035643801', simNumber: '+27 71 900 0001', powerSource: 'hardwired', battery: null, vehicleId: 'v1', status: 'online', installDate: '2024-02-10', lastPing: iso(now) },
+    { id: 't2', serialNumber: 'VO-2024-A002', brand: 'Vo', imei: '356938035643802', simNumber: '+27 71 900 0002', powerSource: 'hardwired', battery: null, vehicleId: 'v2', status: 'online', installDate: '2024-03-15', lastPing: iso(now) },
+    { id: 't3', serialNumber: 'VO-2024-A003', brand: 'Vo', imei: '356938035643803', simNumber: '+27 71 900 0003', powerSource: 'battery',   battery: 78,   vehicleId: null, status: 'unassigned', installDate: null, lastPing: null },
+    { id: 't4', serialNumber: 'VO-2024-A004', brand: 'Vo', imei: '356938035643804', simNumber: '+27 71 900 0004', powerSource: 'obd',       battery: null, vehicleId: null, status: 'unassigned', installDate: null, lastPing: null },
   ];
 
   const alerts = [
