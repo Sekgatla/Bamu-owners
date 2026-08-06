@@ -9,6 +9,72 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./src/css/bamu-owners.css">
+  <!-- EmailJS — used to send login credentials to new customers -->
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+  <style>
+    .credentials-box {
+      background: #F0FDF4;
+      border: 1px solid #86EFAC;
+      border-radius: 10px;
+      padding: 18px 20px;
+      margin-top: 16px;
+    }
+    .credentials-box h3 {
+      font-size: 14px;
+      font-weight: 700;
+      color: #15803D;
+      margin: 0 0 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .credentials-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+    .credentials-label {
+      font-size: 12px;
+      color: #6B7280;
+      font-weight: 500;
+      min-width: 70px;
+    }
+    .credentials-value {
+      font-family: monospace;
+      font-size: 14px;
+      font-weight: 700;
+      color: #111827;
+      background: #FFFFFF;
+      border: 1px solid #D1FAE5;
+      border-radius: 6px;
+      padding: 4px 10px;
+      flex: 1;
+      margin: 0 8px;
+      user-select: all;
+    }
+    .copy-btn {
+      background: none;
+      border: 1px solid #BBF7D0;
+      border-radius: 6px;
+      padding: 4px 10px;
+      font-size: 12px;
+      cursor: pointer;
+      color: #15803D;
+      font-weight: 600;
+      transition: background .15s;
+    }
+    .copy-btn:hover { background: #DCFCE7; }
+    .email-status {
+      margin-top: 12px;
+      font-size: 13px;
+      padding: 8px 12px;
+      border-radius: 7px;
+    }
+    .email-status.sending { background: #EFF6FF; color: #1D4ED8; }
+    .email-status.sent    { background: #F0FDF4; color: #15803D; }
+    .email-status.failed  { background: #FFF7ED; color: #C2410C; }
+  </style>
 </head>
 <body>
   <div class="app-shell">
@@ -114,13 +180,76 @@
     </div>
   </dialog>
 
+  <!-- LOGIN CREDENTIALS MODAL (shown after adding new customer) -->
+  <dialog id="credentials-modal">
+    <div class="modal-header">
+      <h2>Customer Added</h2>
+      <button class="modal-close-btn" id="creds-modal-close">✕</button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:14px;color:var(--text-muted);margin-bottom:4px;">
+        The customer has been saved. Share these login details with them so they can access the Bamu customer portal.
+      </p>
+
+      <div class="credentials-box">
+        <h3>
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          Login Credentials
+        </h3>
+        <div class="credentials-row">
+          <span class="credentials-label">Email</span>
+          <span class="credentials-value" id="creds-email">—</span>
+          <button class="copy-btn" onclick="copyField('creds-email')">Copy</button>
+        </div>
+        <div class="credentials-row">
+          <span class="credentials-label">Password</span>
+          <span class="credentials-value" id="creds-password">—</span>
+          <button class="copy-btn" onclick="copyField('creds-password')">Copy</button>
+        </div>
+        <div class="credentials-row" style="margin-bottom:0">
+          <span class="credentials-label">Login URL</span>
+          <span class="credentials-value" id="creds-url" style="font-size:12px;">—</span>
+          <button class="copy-btn" onclick="copyField('creds-url')">Copy</button>
+        </div>
+      </div>
+
+      <div id="email-status" style="display:none;" class="email-status"></div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" id="creds-copy-all-btn">Copy All</button>
+      <button type="button" class="btn btn-primary" id="creds-close-btn">Done</button>
+    </div>
+  </dialog>
+
   <script type="module">
     import { getCustomers, addCustomer, updateCustomer, deleteCustomer, getVehicleById, getAlerts } from './src/js/storage.js';
+
+    // =============================================
+    // EMAILJS CONFIGURATION
+    // To enable automatic email sending to new customers:
+    // 1. Sign up at https://www.emailjs.com (free plan works)
+    // 2. Create a service (Gmail, Outlook, etc.)
+    // 3. Create an email template with variables:
+    //    {{to_name}}, {{to_email}}, {{customer_password}}, {{login_url}}
+    // 4. Replace the values below with your real credentials
+    // =============================================
+    const EMAILJS_PUBLIC_KEY  = 'YOUR_PUBLIC_KEY';   // from EmailJS → Account → API Keys
+    const EMAILJS_SERVICE_ID  = 'YOUR_SERVICE_ID';   // from EmailJS → Email Services
+    const EMAILJS_TEMPLATE_ID = 'YOUR_TEMPLATE_ID';  // from EmailJS → Email Templates
+
+    // URL where customers log in — update this to your deployed customer site URL
+    const CUSTOMER_LOGIN_URL = window.location.origin.replace('owners', 'track') || 'https://your-customer-site-url.com';
 
     // Nav badge
     const unread = getAlerts().filter(a => !a.read).length;
     const navBadge = document.getElementById('alerts-nav-badge');
     if (navBadge && unread > 0) { navBadge.textContent = unread; navBadge.style.display = 'inline-flex'; }
+
+    // Initialise EmailJS if credentials are configured
+    const emailJsConfigured = EMAILJS_PUBLIC_KEY !== 'YOUR_PUBLIC_KEY';
+    if (emailJsConfigured) {
+      emailjs.init(EMAILJS_PUBLIC_KEY);
+    }
 
     function formatDate(iso) {
       if (!iso) return '—';
@@ -175,6 +304,7 @@
     }
 
     const modal = document.getElementById('customer-modal');
+    const credsModal = document.getElementById('credentials-modal');
     const form = document.getElementById('customer-form');
 
     function openAddModal() {
@@ -206,6 +336,8 @@
     document.getElementById('add-customer-btn').addEventListener('click', openAddModal);
     document.getElementById('modal-close').addEventListener('click', closeModal);
     document.getElementById('modal-cancel').addEventListener('click', closeModal);
+    document.getElementById('creds-modal-close').addEventListener('click', () => credsModal.close());
+    document.getElementById('creds-close-btn').addEventListener('click', () => credsModal.close());
 
     document.getElementById('modal-save').addEventListener('click', () => {
       const name = document.getElementById('f-name').value.trim();
@@ -231,13 +363,76 @@
         const updateData = { name, email, phone };
         if (password) updateData.password = password;
         updateCustomer(editId, updateData);
+        closeModal();
+        renderTable();
       } else {
+        // Adding a new customer
         addCustomer({ name, email, password, phone, vehicleId: null });
+        closeModal();
+        renderTable();
+        // Show credentials modal
+        showCredentials(name, email, password);
+        // Send welcome email
+        sendWelcomeEmail(name, email, password);
+      }
+    });
+
+    // ---- CREDENTIALS MODAL ----
+    function showCredentials(name, email, password) {
+      document.getElementById('creds-email').textContent = email;
+      document.getElementById('creds-password').textContent = password;
+      document.getElementById('creds-url').textContent = CUSTOMER_LOGIN_URL;
+      document.getElementById('email-status').style.display = 'none';
+      credsModal.showModal();
+    }
+
+    // ---- COPY ALL ----
+    document.getElementById('creds-copy-all-btn').addEventListener('click', () => {
+      const email    = document.getElementById('creds-email').textContent;
+      const password = document.getElementById('creds-password').textContent;
+      const url      = document.getElementById('creds-url').textContent;
+      const text = `Bamu Customer Login Details\n\nLogin URL: ${url}\nEmail: ${email}\nPassword: ${password}\n\nPlease keep these details safe.`;
+      navigator.clipboard.writeText(text).then(() => {
+        const btn = document.getElementById('creds-copy-all-btn');
+        btn.textContent = 'Copied!';
+        setTimeout(() => { btn.textContent = 'Copy All'; }, 2000);
+      });
+    });
+
+    // ---- SEND WELCOME EMAIL (EmailJS) ----
+    async function sendWelcomeEmail(name, email, password) {
+      const statusEl = document.getElementById('email-status');
+      if (!emailJsConfigured) {
+        statusEl.className = 'email-status failed';
+        statusEl.textContent = 'ℹ️ Email not configured — copy the credentials above to share with the customer. See the code comments to set up EmailJS.';
+        statusEl.style.display = 'block';
+        return;
       }
 
-      closeModal();
-      renderTable();
-    });
+      statusEl.className = 'email-status sending';
+      statusEl.textContent = '⏳ Sending welcome email...';
+      statusEl.style.display = 'block';
+
+      try {
+        await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+          to_name: name,
+          to_email: email,
+          customer_password: password,
+          login_url: CUSTOMER_LOGIN_URL,
+        });
+        statusEl.className = 'email-status sent';
+        statusEl.textContent = `✅ Welcome email sent to ${email}`;
+      } catch (err) {
+        statusEl.className = 'email-status failed';
+        statusEl.textContent = `⚠️ Could not send email: ${err?.text || err?.message || 'Unknown error'}. Please share the credentials above manually.`;
+      }
+    }
+
+    // ---- COPY INDIVIDUAL FIELD ----
+    window.copyField = (id) => {
+      const text = document.getElementById(id).textContent;
+      navigator.clipboard.writeText(text);
+    };
 
     renderTable();
   </script>

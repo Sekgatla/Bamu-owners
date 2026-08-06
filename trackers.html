@@ -30,6 +30,91 @@
     .status-tampered  { background:#FEE2E2;color:#DC2626; }
     .status-low-battery{ background:#FEF3C7;color:#D97706; }
     .detail-grid { display:grid;grid-template-columns:1fr 1fr;gap:0; }
+
+    /* Engine Cut Styles */
+    .engine-cut-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .engine-running { background: #D1FAE5; color: #047857; }
+    .engine-cut-active { background: #FEE2E2; color: #DC2626; }
+
+    .engine-actions {
+      display: flex;
+      gap: 6px;
+      margin-top: 6px;
+    }
+    .btn-engine-cut {
+      background: #FEE2E2;
+      color: #DC2626;
+      border: 1px solid #FECACA;
+      border-radius: 7px;
+      padding: 4px 12px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background .15s;
+    }
+    .btn-engine-cut:hover { background: #FECACA; }
+    .btn-engine-restore {
+      background: #D1FAE5;
+      color: #047857;
+      border: 1px solid #A7F3D0;
+      border-radius: 7px;
+      padding: 4px 12px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background .15s;
+    }
+    .btn-engine-restore:hover { background: #A7F3D0; }
+
+    .no-engine-cut {
+      font-size: 12px;
+      color: #9CA3AF;
+      font-style: italic;
+    }
+
+    /* Toggle switch for Can Cut Engine */
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 4px;
+    }
+    .toggle-switch {
+      position: relative;
+      width: 40px;
+      height: 22px;
+      flex-shrink: 0;
+    }
+    .toggle-switch input { opacity: 0; width: 0; height: 0; }
+    .toggle-slider {
+      position: absolute;
+      inset: 0;
+      background: #D1D5DB;
+      border-radius: 99px;
+      cursor: pointer;
+      transition: background .2s;
+    }
+    .toggle-slider::before {
+      content: '';
+      position: absolute;
+      width: 16px; height: 16px;
+      left: 3px; bottom: 3px;
+      background: #fff;
+      border-radius: 50%;
+      transition: transform .2s;
+    }
+    .toggle-switch input:checked + .toggle-slider { background: #16A34A; }
+    .toggle-switch input:checked + .toggle-slider::before { transform: translateX(18px); }
+    .toggle-label { font-size: 13px; color: #374151; font-weight: 500; }
+    .toggle-hint { font-size: 12px; color: #9CA3AF; margin-left: 4px; }
   </style>
 </head>
 <body>
@@ -116,13 +201,13 @@
         </div>
         <div class="stat-card">
           <div class="stat-card-top">
-            <span class="stat-card-label">Attention</span>
+            <span class="stat-card-label">Engine Cut</span>
             <div class="stat-card-icon red">
-              <svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+              <svg viewBox="0 0 24 24"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg>
             </div>
           </div>
-          <div class="stat-card-value" id="stat-attention" style="color:var(--danger)">0</div>
-          <div class="stat-card-sub">Offline / tampered</div>
+          <div class="stat-card-value" id="stat-cut" style="color:var(--danger)">0</div>
+          <div class="stat-card-sub">Engines remotely cut</div>
         </div>
       </div>
 
@@ -136,7 +221,7 @@
               <th>Status</th>
               <th>Battery / Power</th>
               <th>Assigned Vehicle</th>
-              <th>Last Contact</th>
+              <th>Engine Control</th>
               <th style="text-align:right">Actions</th>
             </tr>
           </thead>
@@ -206,6 +291,21 @@
           <input type="number" id="tracker-battery" class="form-input" min="0" max="100" value="100" placeholder="0–100" />
         </div>
 
+        <!-- ENGINE CUT SUPPORT -->
+        <div class="form-group">
+          <label class="form-label">Remote Engine Cut</label>
+          <div class="toggle-row">
+            <label class="toggle-switch">
+              <input type="checkbox" id="tracker-can-cut-engine" />
+              <span class="toggle-slider"></span>
+            </label>
+            <span class="toggle-label">This tracker supports remote engine cut</span>
+          </div>
+          <div style="font-size:12px;color:var(--text-muted);margin-top:6px">
+            Enable only for tracker models that have remote engine cut/relay wired in. Typically hardwired trackers with a relay output.
+          </div>
+        </div>
+
         <div class="form-group">
           <label class="form-label" for="tracker-status">Status</label>
           <select id="tracker-status" class="form-input">
@@ -247,11 +347,29 @@
     </div>
   </dialog>
 
+  <!-- ENGINE CUT CONFIRM DIALOG -->
+  <dialog id="engine-cut-modal">
+    <div class="modal-header">
+      <h2 id="engine-cut-title">Confirm Engine Cut</h2>
+      <button class="modal-close-btn" id="engine-cut-close">✕</button>
+    </div>
+    <div class="modal-body">
+      <p id="engine-cut-message" style="font-size:15px;color:#374151;"></p>
+      <div id="engine-cut-warning" style="display:none;margin-top:16px;padding:12px 16px;background:#FEF2F2;border:1px solid #FECACA;border-radius:8px;font-size:13px;color:#DC2626;font-weight:600;">
+        ⚠️ Warning: Cutting the engine while the vehicle is moving can be dangerous. Only cut when you are certain the vehicle is parked or in a safe situation.
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" id="engine-cut-cancel">Cancel</button>
+      <button type="button" id="engine-cut-confirm" class="btn btn-primary">Confirm</button>
+    </div>
+  </dialog>
+
   <script type="module">
     import {
       getTrackers, addTracker, updateTracker, deleteTracker,
       getVehicles, getVehicleById, updateVehicle,
-      getAlerts
+      getAlerts, setEngineCutStatus
     } from './src/js/storage.js';
 
     // Alerts badge
@@ -298,6 +416,22 @@
       </div>`;
     }
 
+    function engineControlCell(tracker) {
+      if (!tracker.canCutEngine) {
+        return `<span class="no-engine-cut">Not supported</span>`;
+      }
+      const isCut = tracker.engineCutStatus === 'cut';
+      const statusBadgeHtml = isCut
+        ? `<span class="engine-cut-badge engine-cut-active">🔴 Engine Cut</span>`
+        : `<span class="engine-cut-badge engine-running">🟢 Running</span>`;
+
+      const actionBtn = isCut
+        ? `<button class="btn-engine-restore" onclick="confirmEngineRestore('${tracker.id}')">Restore Engine</button>`
+        : `<button class="btn-engine-cut" onclick="confirmEngineCut('${tracker.id}')">Cut Engine</button>`;
+
+      return `<div>${statusBadgeHtml}</div><div class="engine-actions">${actionBtn}</div>`;
+    }
+
     function relativeTime(iso) {
       if (!iso) return '—';
       const diff = (Date.now() - new Date(iso).getTime()) / 1000;
@@ -318,7 +452,7 @@
       document.getElementById('stat-total').textContent = trackers.length;
       document.getElementById('stat-online').textContent = trackers.filter(t => t.status === 'online').length;
       document.getElementById('stat-unassigned').textContent = trackers.filter(t => t.status === 'unassigned' || !t.vehicleId).length;
-      document.getElementById('stat-attention').textContent = trackers.filter(t => ['offline','tampered','no-signal'].includes(t.status)).length;
+      document.getElementById('stat-cut').textContent = trackers.filter(t => t.canCutEngine && t.engineCutStatus === 'cut').length;
 
       if (!trackers.length) {
         table.style.display = 'none'; empty.style.display = 'flex'; return;
@@ -339,7 +473,7 @@
           <td>${statusBadge(t.status)}</td>
           <td>${batteryCell(t)}</td>
           <td>${vehicleTxt}</td>
-          <td style="font-size:13px;color:var(--text-muted)">${relativeTime(t.lastPing)}</td>
+          <td>${engineControlCell(t)}</td>
           <td>
             <div class="table-actions">
               <button class="btn btn-ghost btn-xs" onclick="viewTracker('${t.id}')">View</button>
@@ -350,6 +484,50 @@
         </tr>`;
       }).join('');
     }
+
+    // ---- ENGINE CUT / RESTORE ----
+    let _pendingEngineCutId = null;
+    let _pendingEngineCutAction = null; // 'cut' | 'restore'
+
+    const engineCutModal = document.getElementById('engine-cut-modal');
+
+    window.confirmEngineCut = (trackerId) => {
+      _pendingEngineCutId = trackerId;
+      _pendingEngineCutAction = 'cut';
+      const tracker = getTrackers().find(t => t.id === trackerId);
+      const vehicle = tracker?.vehicleId ? getVehicleById(tracker.vehicleId) : null;
+      document.getElementById('engine-cut-title').textContent = 'Confirm Engine Cut';
+      document.getElementById('engine-cut-message').textContent =
+        `Are you sure you want to remotely cut the engine for ${vehicle ? vehicle.make + ' ' + vehicle.model + ' (' + vehicle.plate + ')' : 'this vehicle'}?`;
+      document.getElementById('engine-cut-warning').style.display = 'block';
+      document.getElementById('engine-cut-confirm').style.background = '#DC2626';
+      document.getElementById('engine-cut-confirm').textContent = 'Cut Engine';
+      engineCutModal.showModal();
+    };
+
+    window.confirmEngineRestore = (trackerId) => {
+      _pendingEngineCutId = trackerId;
+      _pendingEngineCutAction = 'restore';
+      const tracker = getTrackers().find(t => t.id === trackerId);
+      const vehicle = tracker?.vehicleId ? getVehicleById(tracker.vehicleId) : null;
+      document.getElementById('engine-cut-title').textContent = 'Restore Engine';
+      document.getElementById('engine-cut-message').textContent =
+        `Restore engine power for ${vehicle ? vehicle.make + ' ' + vehicle.model + ' (' + vehicle.plate + ')' : 'this vehicle'}?`;
+      document.getElementById('engine-cut-warning').style.display = 'none';
+      document.getElementById('engine-cut-confirm').style.background = '';
+      document.getElementById('engine-cut-confirm').textContent = 'Restore Engine';
+      engineCutModal.showModal();
+    };
+
+    document.getElementById('engine-cut-close').addEventListener('click', () => engineCutModal.close());
+    document.getElementById('engine-cut-cancel').addEventListener('click', () => engineCutModal.close());
+    document.getElementById('engine-cut-confirm').addEventListener('click', () => {
+      if (!_pendingEngineCutId) return;
+      const newStatus = _pendingEngineCutAction === 'cut' ? 'cut' : 'running';
+      setEngineCutStatus(_pendingEngineCutId, newStatus);
+      engineCutModal.close();
+      renderTable();
+    });
 
     // ---- MODAL ----
     const modal = document.getElementById('tracker-modal');
@@ -397,6 +575,7 @@
         document.getElementById('tracker-install-date').value = tracker.installDate ? tracker.installDate.slice(0,10) : '';
         document.getElementById('tracker-power').value = tracker.powerSource || '';
         document.getElementById('tracker-status').value = tracker.status || 'unassigned';
+        document.getElementById('tracker-can-cut-engine').checked = tracker.canCutEngine === true;
         if (tracker.powerSource === 'battery') {
           battGroup.style.display = '';
           document.getElementById('tracker-battery').value = tracker.battery ?? 100;
@@ -407,6 +586,7 @@
       } else {
         document.getElementById('tracker-brand').value = 'Vo';
         document.getElementById('tracker-status').value = 'unassigned';
+        document.getElementById('tracker-can-cut-engine').checked = false;
         populateVehicleDropdown(null);
       }
       modal.showModal();
@@ -428,6 +608,7 @@
       const status = document.getElementById('tracker-status').value || 'unassigned';
       const battery = powerSource === 'battery' ? (parseInt(document.getElementById('tracker-battery').value) || 100) : null;
       const vehicleId = document.getElementById('tracker-vehicle').value || null;
+      const canCutEngine = document.getElementById('tracker-can-cut-engine').checked;
       const id = document.getElementById('tracker-id').value;
 
       if (!serial) { showError('Serial number is required.'); return; }
@@ -436,11 +617,17 @@
       const dupe = getTrackers().find(t => t.serialNumber === serial && t.id !== id);
       if (dupe) { showError('A tracker with this serial number already exists.'); return; }
 
-      const data = { serialNumber: serial, brand, imei, simNumber, installDate, powerSource, status, battery, vehicleId,
-        lastPing: vehicleId ? (id ? (getTrackers().find(t=>t.id===id)?.lastPing || new Date().toISOString()) : new Date().toISOString()) : null };
+      const existingTracker = id ? getTrackers().find(t => t.id === id) : null;
+      const data = {
+        serialNumber: serial, brand, imei, simNumber, installDate, powerSource, status, battery, vehicleId,
+        canCutEngine,
+        // Preserve engineCutStatus when editing; default to 'running' for new trackers
+        engineCutStatus: existingTracker?.engineCutStatus || 'running',
+        lastPing: vehicleId ? (id ? (existingTracker?.lastPing || new Date().toISOString()) : new Date().toISOString()) : null
+      };
 
       if (id) {
-        const old = getTrackers().find(t => t.id === id);
+        const old = existingTracker;
         if (old?.vehicleId && old.vehicleId !== vehicleId) updateVehicle(old.vehicleId, { trackerId: null });
         updateTracker(id, data);
         if (vehicleId) updateVehicle(vehicleId, { trackerId: id });
@@ -466,8 +653,11 @@
       const t = getTrackers().find(x => x.id === id);
       if (!t) return;
       const vehicle = t.vehicleId ? getVehicleById(t.vehicleId) : null;
-      const p = POWER_CONFIG[t.powerSource] || {};
       document.getElementById('detail-title').textContent = t.serialNumber;
+
+      const engineCutRow = t.canCutEngine
+        ? `<span class="engine-cut-badge ${t.engineCutStatus === 'cut' ? 'engine-cut-active' : 'engine-running'}">${t.engineCutStatus === 'cut' ? '🔴 Engine Cut' : '🟢 Running'}</span>`
+        : 'Not supported';
 
       const rows = [
         ['Brand', t.brand || 'Vo'],
@@ -477,6 +667,7 @@
         ['Power Source', powerBadge(t.powerSource)],
         ['Status', statusBadge(t.status)],
         ['Battery', t.powerSource==='battery' ? `${t.battery ?? '—'}%` : (t.powerSource==='hardwired'?'⚡ Vehicle power':'⚡ OBD power')],
+        ['Remote Engine Cut', engineCutRow],
         ['Assigned Vehicle', vehicle ? `${vehicle.make} ${vehicle.model} — ${vehicle.plate}` : '—'],
         ['Install Date', t.installDate ? new Date(t.installDate).toLocaleDateString('en-ZA',{day:'2-digit',month:'long',year:'numeric'}) : '—'],
         ['Last Contact', t.lastPing ? new Date(t.lastPing).toLocaleString('en-ZA') : '—'],

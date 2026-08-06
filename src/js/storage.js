@@ -108,6 +108,8 @@ export function addTracker(data) {
     status: 'unassigned',
     battery: 100,
     lastPing: null,
+    canCutEngine: false,       // whether this tracker model supports remote engine cut
+    engineCutStatus: 'running', // 'running' | 'cut'
     ...data
   };
   trackers.push(newTracker);
@@ -129,6 +131,16 @@ export function updateTracker(id, data) {
 export function deleteTracker(id) {
   const trackers = getTrackers().filter(t => t.id !== id);
   localStorage.setItem('bamu_trackers', JSON.stringify(trackers));
+}
+
+// ---- ENGINE CUT ----
+/**
+ * Remotely cut the engine for a tracker.
+ * Only works if tracker.canCutEngine === true.
+ */
+export function setEngineCutStatus(trackerId, status) {
+  // status: 'cut' | 'running'
+  return updateTracker(trackerId, { engineCutStatus: status });
 }
 
 // ---- ALERTS ----
@@ -215,10 +227,12 @@ export function getSession() {
   ];
 
   const trackers = [
-    { id: 't1', serialNumber: 'VO-2024-A001', brand: 'Vo', imei: '356938035643801', simNumber: '+27 71 900 0001', powerSource: 'hardwired', battery: null, vehicleId: 'v1', status: 'online', installDate: '2024-02-10', lastPing: iso(now) },
-    { id: 't2', serialNumber: 'VO-2024-A002', brand: 'Vo', imei: '356938035643802', simNumber: '+27 71 900 0002', powerSource: 'hardwired', battery: null, vehicleId: 'v2', status: 'online', installDate: '2024-03-15', lastPing: iso(now) },
-    { id: 't3', serialNumber: 'VO-2024-A003', brand: 'Vo', imei: '356938035643803', simNumber: '+27 71 900 0003', powerSource: 'battery',   battery: 78,   vehicleId: null, status: 'unassigned', installDate: null, lastPing: null },
-    { id: 't4', serialNumber: 'VO-2024-A004', brand: 'Vo', imei: '356938035643804', simNumber: '+27 71 900 0004', powerSource: 'obd',       battery: null, vehicleId: null, status: 'unassigned', installDate: null, lastPing: null },
+    // t1 — hardwired, supports engine cut
+    { id: 't1', serialNumber: 'VO-2024-A001', brand: 'Vo', imei: '356938035643801', simNumber: '+27 71 900 0001', powerSource: 'hardwired', battery: null, vehicleId: 'v1', status: 'online', installDate: '2024-02-10', lastPing: iso(now), canCutEngine: true, engineCutStatus: 'running' },
+    // t2 — OBD-II, does NOT support engine cut
+    { id: 't2', serialNumber: 'VO-2024-A002', brand: 'Vo', imei: '356938035643802', simNumber: '+27 71 900 0002', powerSource: 'obd', battery: null, vehicleId: 'v2', status: 'online', installDate: '2024-03-15', lastPing: iso(now), canCutEngine: false, engineCutStatus: 'running' },
+    { id: 't3', serialNumber: 'VO-2024-A003', brand: 'Vo', imei: '356938035643803', simNumber: '+27 71 900 0003', powerSource: 'battery', battery: 78, vehicleId: null, status: 'unassigned', installDate: null, lastPing: null, canCutEngine: false, engineCutStatus: 'running' },
+    { id: 't4', serialNumber: 'VO-2024-A004', brand: 'Vo', imei: '356938035643804', simNumber: '+27 71 900 0004', powerSource: 'obd', battery: null, vehicleId: null, status: 'unassigned', installDate: null, lastPing: null, canCutEngine: false, engineCutStatus: 'running' },
   ];
 
   const alerts = [
